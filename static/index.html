@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Debate Agent</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="main-container">
+        <header>
+            <h1>AI Debate Agent</h1>
+            <p class="subtitle">Watch AI agents debate on any topic</p>
+            <div class="header-controls">
+                <button id="save-btn" class="icon-btn" title="Save Debate">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                        <polyline points="7 3 7 8 15 8"></polyline>
+                    </svg>
+                </button>
+                <button id="load-btn" class="icon-btn" title="Load Debate">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                </button>
+                <button id="settings-btn" class="icon-btn" title="Settings">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path
+                            d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z">
+                        </path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                </button>
+            </div>
+            <input type="file" id="file-input" accept=".md" class="hidden">
+        </header>
+
+        <div class="chat-container" id="chat-container">
+            <!-- Messages will appear here -->
+            <div class="welcome-message">
+                <p>주제를 입력하고 토론을 시작하세요!</p>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <form id="debate-form">
+                <div class="model-selector">
+                    <select id="model-select" required>
+                        <option value="" disabled selected>Select Model</option>
+                    </select>
+                </div>
+                <input type="text" id="topic-input" placeholder="토론 주제를 입력하세요 (예: 비트코인은 최고의 자산이다)" required
+                    autocomplete="off">
+                <button type="submit" id="start-btn">
+                    <span class="btn-text">Start Debate</span>
+                    <div class="loader" id="loader"></div>
+                </button>
+            </form>
+            <button id="stop-btn" class="hidden">Stop Debate</button>
+
+            <div class="control-panel">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="auto-play" checked>
+                    <span class="slider"></span>
+                    <span class="label-text">Auto Play</span>
+                </label>
+                <button id="next-btn" class="secondary-btn" disabled>Next Turn (Enter)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Settings</h2>
+                <button id="close-settings" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="google-api-key">Google API Key</label>
+                    <input type="password" id="google-api-key" placeholder="Enter your Google API Key">
+                    <p class="help-text">Required for Gemini models. Stored locally in your browser.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="save-settings" class="primary-btn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+
+</html>

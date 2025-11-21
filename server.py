@@ -141,14 +141,31 @@ async def next_turn(session_id: str):
                 elif kind == "on_chain_stream":
                     # RPi/alternative streaming approach
                     chunk = event["data"].get("chunk")
+                    node_name = event.get("metadata", {}).get("langgraph_node", "")
+                    
+                    print(f"[DEBUG] on_chain_stream - node: {node_name}, chunk type: {type(chunk)}")
+                    
                     if chunk:
-                        node_name = event.get("metadata", {}).get("langgraph_node", "")
+                        # Try different ways to get content
+                        content = None
                         
-                        # Check if this is a message chunk with content
-                        if hasattr(chunk, 'content') and chunk.content:
+                        # Method 1: Direct attribute
+                        if hasattr(chunk, 'content'):
                             content = chunk.content
-                            print(f"[DEBUG] Token content (chain): {repr(content)}")
-                            
+                            print(f"[DEBUG] Found content via .content: {repr(content)}")
+                        
+                        # Method 2: Dictionary key
+                        elif isinstance(chunk, dict) and 'content' in chunk:
+                            content = chunk['content']
+                            print(f"[DEBUG] Found content via ['content']: {repr(content)}")
+                        
+                        # Method 3: Inspect the chunk structure
+                        else:
+                            print(f"[DEBUG] Chunk structure: {chunk}")
+                            if hasattr(chunk, '__dict__'):
+                                print(f"[DEBUG] Chunk attributes: {chunk.__dict__}")
+                        
+                        if content:
                             role = "unknown"
                             if node_name == "moderator":
                                 role = "moderator"

@@ -195,10 +195,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 modelSelect.appendChild(option);
             });
 
-            // Select first model by default if available
+            // Select gemini-2.5-flash by default if available, otherwise first model
             if (data.models.length > 0) {
-                const firstModel = data.models[0];
-                modelSelect.value = JSON.stringify({ name: firstModel.name, provider: firstModel.provider });
+                const preferredModel = data.models.find(m => m.name === 'gemini-2.5-flash' && m.provider === 'google');
+                const defaultModel = preferredModel || data.models[0];
+                modelSelect.value = JSON.stringify({ name: defaultModel.name, provider: defaultModel.provider });
             }
         } catch (error) {
             console.error('Error fetching models:', error);

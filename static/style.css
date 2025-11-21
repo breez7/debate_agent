@@ -326,14 +326,124 @@ input:checked+.slider:before {
     white-space: nowrap;
 }
 
-/* Responsive design */
-@media (max-width: 600px) {
-    .container {
-        padding: 10px;
+/* Mobile Responsive Design */
+@media (max-width: 768px) {
+    body {
+        padding: 0;
+        height: 100vh;
+        align-items: stretch;
+    }
+
+    .main-container {
+        max-width: 100%;
+        height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    header {
+        padding: 1rem;
+    }
+
+    header h1 {
+        font-size: 1.25rem;
+    }
+
+    .subtitle {
+        font-size: 0.75rem;
+    }
+
+    .chat-container {
+        padding: 1rem;
+        gap: 1rem;
     }
 
     .message {
         max-width: 90%;
+        padding: 1rem;
+        font-size: 0.9rem;
+    }
+
+    .moderator {
+        max-width: 95%;
+    }
+
+    .input-area {
+        padding: 1rem;
+    }
+
+    form {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+    }
+
+    .model-selector select {
+        width: 100%;
+        min-width: auto;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+    }
+
+    button {
+        padding: 0.75rem 1.25rem;
+        font-size: 0.95rem;
+    }
+
+    #start-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .control-panel {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+
+    .toggle-switch {
+        justify-content: center;
+        width: 100%;
+    }
+
+    #next-btn,
+    .secondary-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    #stop-btn {
+        margin-top: 0.75rem;
+    }
+
+    .header-controls {
+        position: static;
+        justify-content: center;
+        margin-top: 0.5rem;
+    }
+
+    .message-content {
+        font-size: 0.875rem;
+    }
+
+    .message-header {
+        font-size: 0.7rem;
+    }
+}
+
+/* Tablet */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .main-container {
+        max-width: 90%;
+    }
+
+    .message {
+        max-width: 85%;
     }
 }
 

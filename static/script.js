@@ -21,6 +21,13 @@ document.addEventListener('DOMContentLoaded', () => {
         googleApiKeyInput.value = savedApiKey;
     }
 
+    // Reading Mode Toggle
+    const toggleUIBtn = document.getElementById('toggle-ui-btn');
+    toggleUIBtn.addEventListener('click', () => {
+        document.body.classList.toggle('reading-mode');
+        toggleUIBtn.classList.toggle('collapsed');
+    });
+
     // Settings Modal Logic
     settingsBtn.addEventListener('click', () => {
         settingsModal.classList.remove('hidden');

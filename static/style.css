@@ -675,3 +675,67 @@ header .icon-btn {
 .message-content strong {
     font-weight: 600;
 }
+
+/* Floating Toggle Button for Reading Mode */
+.floating-toggle-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: rgba(59, 130, 246, 0.9);
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(8px);
+}
+
+.floating-toggle-btn:hover {
+    background-color: rgba(37, 99, 235, 0.95);
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.floating-toggle-btn svg {
+    transition: transform 0.3s ease;
+}
+
+.floating-toggle-btn.collapsed svg {
+    transform: rotate(180deg);
+}
+
+/* UI Collapsed State */
+body.reading-mode header,
+body.reading-mode .input-area {
+    max-height: 0;
+    overflow: hidden;
+    padding-top: 0;
+    padding-bottom: 0;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+body.reading-mode .main-container {
+    padding-top: 0;
+}
+
+body.reading-mode .chat-container {
+    padding-top: 2rem;
+}
+
+/* Mobile adjustments for toggle button */
+@media (max-width: 768px) {
+    .floating-toggle-btn {
+        top: 15px;
+        right: 15px;
+        width: 44px;
+        height: 44px;
+    }
+}

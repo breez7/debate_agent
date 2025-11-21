@@ -108,13 +108,14 @@ async def next_turn(session_id: str):
                 kind = event["event"]
                 
                 # Log ALL events for debugging
-                if event_count <= 10 or kind == "on_chat_model_stream":
+                if event_count <= 10 or kind in ["on_chat_model_stream", "on_chain_stream"]:
                     print(f"[DEBUG] Event #{event_count}: {kind}")
                 
-                # Stream tokens
+                # Stream tokens - handle both event types for cross-platform compatibility
                 if kind == "on_chat_model_stream":
+                    # Windows/direct streaming approach
                     content = event["data"]["chunk"].content
-                    print(f"[DEBUG] Token content: {repr(content)}")
+                    print(f"[DEBUG] Token content (chat_model): {repr(content)}")
                     if content:
                         # Determine role from node name
                         node_name = event.get("metadata", {}).get("langgraph_node", "")
@@ -136,6 +137,34 @@ async def next_turn(session_id: str):
                             yield f"data: {data}\n\n"
                         else:
                             print(f"[DEBUG] Token skipped - unknown role for node: {node_name}")
+                
+                elif kind == "on_chain_stream":
+                    # RPi/alternative streaming approach
+                    chunk = event["data"].get("chunk")
+                    if chunk:
+                        node_name = event.get("metadata", {}).get("langgraph_node", "")
+                        
+                        # Check if this is a message chunk with content
+                        if hasattr(chunk, 'content') and chunk.content:
+                            content = chunk.content
+                            print(f"[DEBUG] Token content (chain): {repr(content)}")
+                            
+                            role = "unknown"
+                            if node_name == "moderator":
+                                role = "moderator"
+                            elif node_name == "debater_A":
+                                role = "proponent"
+                            elif node_name == "debater_B":
+                                role = "opponent"
+                            
+                            if role != "unknown":
+                                data = json.dumps({
+                                    "type": "token",
+                                    "role": role,
+                                    "content": content
+                                })
+                                print(f"[DEBUG] Emitting token for {role}: {content[:20]}...")
+                                yield f"data: {data}\n\n"
 
                 # Handle decision/stop (check state updates)
                 elif kind == "on_chain_end":

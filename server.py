@@ -102,12 +102,19 @@ async def next_turn(session_id: str):
         try:
             # Use astream_events
             # If inputs is None, it resumes from interrupt
+            event_count = 0
             async for event in debate_app.astream_events(inputs, version="v2", config=config):
+                event_count += 1
                 kind = event["event"]
+                
+                # Log ALL events for debugging
+                if event_count <= 10 or kind == "on_chat_model_stream":
+                    print(f"[DEBUG] Event #{event_count}: {kind}")
                 
                 # Stream tokens
                 if kind == "on_chat_model_stream":
                     content = event["data"]["chunk"].content
+                    print(f"[DEBUG] Token content: {repr(content)}")
                     if content:
                         # Determine role from node name
                         node_name = event.get("metadata", {}).get("langgraph_node", "")
@@ -127,6 +134,8 @@ async def next_turn(session_id: str):
                             })
                             print(f"[DEBUG] Emitting token for {role}: {content[:20]}...")
                             yield f"data: {data}\n\n"
+                        else:
+                            print(f"[DEBUG] Token skipped - unknown role for node: {node_name}")
 
                 # Handle decision/stop (check state updates)
                 elif kind == "on_chain_end":
@@ -144,6 +153,7 @@ async def next_turn(session_id: str):
                             print(f"[DEBUG] Emitting end event")
                             yield f"data: {json.dumps({'type': 'end'})}\n\n"
             
+            print(f"[DEBUG] Total events processed: {event_count}")
             # Increment turn count after successful stream
             session["turn_count"] += 1
             print(f"[DEBUG] Turn {session['turn_count']} completed")

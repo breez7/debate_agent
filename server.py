@@ -145,25 +145,33 @@ async def next_turn(session_id: str):
                     
                     print(f"[DEBUG] on_chain_stream - node: {node_name}, chunk type: {type(chunk)}")
                     
-                    if chunk:
+                    if chunk and node_name in ["moderator", "debater_A", "debater_B"]:
                         # Try different ways to get content
                         content = None
                         
-                        # Method 1: Direct attribute
-                        if hasattr(chunk, 'content'):
+                        # RPi approach: Look for history in the chunk
+                        if isinstance(chunk, dict) and 'history' in chunk:
+                            history = chunk['history']
+                            if history and len(history) > 0:
+                                # Get the last message in history
+                                last_message = history[-1]
+                                print(f"[DEBUG] Found history with {len(history)} messages, last: {last_message[:100]}...")
+                                
+                                # Extract just the text part (remove role prefix if present)
+                                # Format is usually "사회자: text" or "찬성: text"
+                                if isinstance(last_message, str):
+                                    # Remove role prefix if it exists
+                                    parts = last_message.split(': ', 1)
+                                    if len(parts) > 1:
+                                        content = parts[1]
+                                    else:
+                                        content = last_message
+                                    print(f"[DEBUG] Extracted content: {content[:100]}...")
+                        
+                        # Windows approach: Direct content attribute
+                        elif hasattr(chunk, 'content'):
                             content = chunk.content
                             print(f"[DEBUG] Found content via .content: {repr(content)}")
-                        
-                        # Method 2: Dictionary key
-                        elif isinstance(chunk, dict) and 'content' in chunk:
-                            content = chunk['content']
-                            print(f"[DEBUG] Found content via ['content']: {repr(content)}")
-                        
-                        # Method 3: Inspect the chunk structure
-                        else:
-                            print(f"[DEBUG] Chunk structure: {chunk}")
-                            if hasattr(chunk, '__dict__'):
-                                print(f"[DEBUG] Chunk attributes: {chunk.__dict__}")
                         
                         if content:
                             role = "unknown"
@@ -175,12 +183,13 @@ async def next_turn(session_id: str):
                                 role = "opponent"
                             
                             if role != "unknown":
+                                # Send the complete text as a single token
                                 data = json.dumps({
                                     "type": "token",
                                     "role": role,
                                     "content": content
                                 })
-                                print(f"[DEBUG] Emitting token for {role}: {content[:20]}...")
+                                print(f"[DEBUG] Emitting full text for {role} ({len(content)} chars)")
                                 yield f"data: {data}\n\n"
 
                 # Handle decision/stop (check state updates)

@@ -680,7 +680,7 @@ header .icon-btn {
 .floating-toggle-btn {
     position: fixed;
     top: 20px;
-    right: 20px;
+    left: 20px;
     width: 48px;
     height: 48px;
     border-radius: 50%;
@@ -734,8 +734,55 @@ body.reading-mode .chat-container {
 @media (max-width: 768px) {
     .floating-toggle-btn {
         top: 15px;
-        right: 15px;
+        left: 15px;
         width: 44px;
         height: 44px;
     }
+
+    .floating-next-btn {
+        bottom: 15px;
+        right: 15px;
+        width: 56px;
+        height: 56px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Floating Next Button for Reading Mode */
+.floating-next-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background-color: rgba(34, 197, 94, 0.9);
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(8px);
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.floating-next-btn:hover:not(:disabled) {
+    background-color: rgba(22, 163, 74, 0.95);
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.floating-next-btn:disabled {
+    background-color: rgba(156, 163, 175, 0.7);
+    cursor: not-allowed;
+    transform: none;
+}
+
+body.reading-mode .floating-next-btn {
+    display: flex;
 }

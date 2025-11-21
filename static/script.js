@@ -244,6 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Manual Control UI Elements
     const autoPlayCheckbox = document.getElementById('auto-play');
     const nextBtn = document.getElementById('next-btn');
+    const floatingNextBtn = document.getElementById('floating-next-btn');
 
     // Manual Control State
     let isAutoPlay = true;
@@ -322,6 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Disable next button while streaming
         nextBtn.disabled = true;
+        floatingNextBtn.disabled = true;
 
         // Connect to SSE endpoint for next turn
         const url = `/next_turn?session_id=${currentSessionId}`;
@@ -391,6 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (!isAutoPlay) {
                         isWaitingForNext = true;
                         nextBtn.disabled = false;
+                        floatingNextBtn.disabled = false;
                         chatContainer.scrollTop = chatContainer.scrollHeight;
                     } else {
                         // Auto play: trigger next turn immediately
@@ -441,6 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             if (isWaitingForNext) {
                 nextBtn.disabled = false;
+                floatingNextBtn.disabled = false;
             }
         }
     });
@@ -449,6 +453,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isWaitingForNext) {
             isWaitingForNext = false;
             nextBtn.disabled = true;
+            floatingNextBtn.disabled = true;
+            streamTurn();
+        }
+    });
+
+    // Floating next button (same behavior as nextBtn)
+    floatingNextBtn.addEventListener('click', () => {
+        if (isWaitingForNext) {
+            isWaitingForNext = false;
+            nextBtn.disabled = true;
+            floatingNextBtn.disabled = true;
             streamTurn();
         }
     });

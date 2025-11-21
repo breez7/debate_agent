@@ -125,6 +125,7 @@ async def next_turn(session_id: str):
                                 "role": role,
                                 "content": content
                             })
+                            print(f"[DEBUG] Emitting token for {role}: {content[:20]}...")
                             yield f"data: {data}\n\n"
 
                 # Handle decision/stop (check state updates)
@@ -133,16 +134,19 @@ async def next_turn(session_id: str):
                     
                     if node_name in ["moderator", "debater_A", "debater_B"]:
                         # Emit turn_end event
+                        print(f"[DEBUG] Emitting turn_end for {node_name}")
                         yield f"data: {json.dumps({'type': 'turn_end', 'role': node_name})}\n\n"
 
                     if node_name == "moderator":
                         # Check if moderator decided to stop
                         output = event["data"].get("output")
                         if output and isinstance(output, dict) and output.get("decision") == "stop":
+                            print(f"[DEBUG] Emitting end event")
                             yield f"data: {json.dumps({'type': 'end'})}\n\n"
             
             # Increment turn count after successful stream
             session["turn_count"] += 1
+            print(f"[DEBUG] Turn {session['turn_count']} completed")
 
         except Exception as e:
             print(f"Error in stream: {e}")
@@ -151,6 +155,7 @@ async def next_turn(session_id: str):
             yield f"data: {json.dumps({'type': 'error', 'content': str(e)})}\n\n"
         
         # Signal that this turn's stream is done (client should close)
+        print(f"[DEBUG] Emitting stream_end")
         yield f"data: {json.dumps({'type': 'stream_end'})}\n\n"
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")

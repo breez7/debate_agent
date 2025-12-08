@@ -76,6 +76,39 @@ async def start_debate_endpoint(request: Request):
     
     return JSONResponse(content={"session_id": session_id})
 
+@app.post("/submit_user_input")
+async def submit_user_input(request: Request):
+    data = await request.json()
+    session_id = data.get("session_id")
+    message = data.get("message")
+
+    if not session_id or not message:
+         return JSONResponse(content={"error": "Missing session_id or message"}, status_code=400)
+
+    if session_id not in sessions:
+        return JSONResponse(content={"error": "Session not found"}, status_code=404)
+
+    session = sessions[session_id]
+    debate_app = session["app"]
+
+    config = {"configurable": {"thread_id": session_id}}
+
+    # Get current state
+    state_snapshot = debate_app.get_state(config)
+    if not state_snapshot.values:
+         return JSONResponse(content={"error": "Debate not started or state unavailable"}, status_code=400)
+
+    current_history = state_snapshot.values.get("history", [])
+
+    # Append user message
+    user_message_formatted = f"사용자: {message}"
+    new_history = current_history + [user_message_formatted]
+
+    # Update state
+    debate_app.update_state(config, {"history": new_history})
+
+    return JSONResponse(content={"status": "success", "history_length": len(new_history)})
+
 @app.get("/next_turn")
 async def next_turn(session_id: str):
     if session_id not in sessions:

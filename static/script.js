@@ -13,6 +13,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveSettingsBtn = document.getElementById('save-settings');
     const googleApiKeyInput = document.getElementById('google-api-key');
 
+    // User Intervention Elements
+    const userInterventionArea = document.getElementById('user-intervention-area');
+    const userInputForm = document.getElementById('user-input-form');
+    const userMessageInput = document.getElementById('user-message-input');
+    const sendUserMsgBtn = document.getElementById('send-user-msg-btn');
+
     let eventSource = null;
 
     // Load API Key from local storage
@@ -152,6 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (displayRole === '사회자' || displayRole === 'Moderator') return 'moderator';
         if (displayRole === '찬성' || displayRole === 'Proponent') return 'proponent';
         if (displayRole === '반대' || displayRole === 'Opponent') return 'opponent';
+        if (displayRole === '사용자' || displayRole === 'User') return 'user';
         return 'unknown';
     }
 
@@ -182,6 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (role === 'moderator') return '사회자';
         if (role === 'proponent') return '찬성';
         if (role === 'opponent') return '반대';
+        if (role === 'user') return '사용자';
         return role;
     }
 
@@ -241,6 +249,68 @@ document.addEventListener('DOMContentLoaded', () => {
         stopDebate();
     });
 
+    // User Input Logic
+    userInputForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const message = userMessageInput.value.trim();
+        if (!message || !currentSessionId) return;
+
+        // Disable input while sending
+        userMessageInput.disabled = true;
+        sendUserMsgBtn.disabled = true;
+
+        try {
+            const response = await fetch('/submit_user_input', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    session_id: currentSessionId,
+                    message: message
+                })
+            });
+
+            if (!response.ok) throw new Error('Failed to submit message');
+
+            // Add message to chat immediately
+            appendMessage('user', message);
+            userMessageInput.value = '';
+
+            // If we are in waiting state, maybe we should trigger something?
+            // Currently, the user input is just added to history.
+            // When next turn happens, it will be included.
+
+        } catch (error) {
+            console.error('Error submitting user message:', error);
+            alert('메시지 전송 실패: ' + error.message);
+        } finally {
+            userMessageInput.disabled = false;
+            // Only enable button if there is text (handled by input event usually, but here simple check)
+            // Or just enable it back
+            // We should check if we are in a state where we can send messages.
+            updateUserInterventionState();
+        }
+    });
+
+    userMessageInput.addEventListener('input', () => {
+        sendUserMsgBtn.disabled = !userMessageInput.value.trim() || !isWaitingForNext;
+    });
+
+    // Update User Intervention UI state based on game state
+    function updateUserInterventionState() {
+        if (currentSessionId && isWaitingForNext) {
+            userInterventionArea.classList.remove('hidden');
+            sendUserMsgBtn.disabled = !userMessageInput.value.trim();
+            userMessageInput.disabled = false;
+        } else if (currentSessionId && !isWaitingForNext) {
+            // Show area but disable interaction while AI is thinking/speaking
+             userInterventionArea.classList.remove('hidden');
+             sendUserMsgBtn.disabled = true;
+             userMessageInput.disabled = true;
+        } else {
+            userInterventionArea.classList.add('hidden');
+        }
+    }
+
     // Manual Control UI Elements
     const autoPlayCheckbox = document.getElementById('auto-play');
     const nextBtn = document.getElementById('next-btn');
@@ -275,6 +345,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Reset controls
         isAutoPlay = autoPlayCheckbox.checked;
         nextBtn.disabled = true;
+        updateUserInterventionState();
 
         // Close existing connection if any
         if (eventSource) {
@@ -320,6 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Show thinking immediately
         showThinking();
+        updateUserInterventionState();
 
         // Disable next button while streaming
         nextBtn.disabled = true;
@@ -395,9 +467,26 @@ document.addEventListener('DOMContentLoaded', () => {
                         nextBtn.disabled = false;
                         floatingNextBtn.disabled = false;
                         chatContainer.scrollTop = chatContainer.scrollHeight;
+                        updateUserInterventionState();
                     } else {
                         // Auto play: trigger next turn immediately
                         // Small delay for better UX
+                        // Update UI to show we are waiting briefly (though we are auto-playing)
+                        // Actually, if auto-play, we probably don't want user interruption?
+                        // The user request says "The user can participate... if necessary".
+                        // If auto-play is on, it might be hard to interrupt.
+                        // But we can leave the input enabled if we want?
+                        // For now, let's enable it only when waiting.
+                        // If autoplay, we are briefly waiting.
+
+                        updateUserInterventionState(); // This will disable inputs because isWaitingForNext is false (wait, we need to set it true?)
+
+                        // Wait, if autoplay, we don't set isWaitingForNext to true usually.
+                        // So the user cannot intervene in Auto Play mode easily.
+                        // Maybe we should allow intervention even during autoplay?
+                        // But that's complicated because the next request is fired automatically.
+                        // Let's stick to: Pause Auto Play to intervene.
+
                         setTimeout(() => streamTurn(), 500);
                     }
 
@@ -438,6 +527,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isWaitingForNext) {
                 isWaitingForNext = false;
                 nextBtn.disabled = true;
+                updateUserInterventionState();
                 // Trigger next turn
                 streamTurn();
             }
@@ -445,6 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isWaitingForNext) {
                 nextBtn.disabled = false;
                 floatingNextBtn.disabled = false;
+                updateUserInterventionState();
             }
         }
     });
@@ -545,6 +636,7 @@ document.addEventListener('DOMContentLoaded', () => {
         isWaitingForNext = false;
         nextBtn.disabled = true;
         currentSessionId = null;
+        updateUserInterventionState();
     }
 
     function setLoading(isLoading) {

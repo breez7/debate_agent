@@ -503,6 +503,20 @@ input:checked+.slider:before {
     color: #dc2626;
 }
 
+/* User (Intervention) Style */
+.user {
+    align-self: flex-end;
+    background-color: #f3f4f6;
+    color: #1f2937;
+    border: 1px solid #d1d5db;
+    border-bottom-right-radius: 0.25rem;
+    margin-right: 2rem;
+}
+
+.user .message-header {
+    color: #374151;
+}
+
 /* Input Area */
 .input-area {
     padding: 1.5rem;

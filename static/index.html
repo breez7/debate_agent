@@ -65,6 +65,14 @@
         </div>
 
         <div class="input-area">
+            <!-- User Intervention Area (Hidden by default, shown when debate starts) -->
+            <div id="user-intervention-area" class="hidden" style="margin-bottom: 1rem; border-top: 1px solid #e5e7eb; padding-top: 1rem;">
+                <form id="user-input-form" style="display: flex; gap: 0.5rem;">
+                    <input type="text" id="user-message-input" placeholder="토론에 참여하거나 방향을 제시하세요..." autocomplete="off">
+                    <button type="submit" id="send-user-msg-btn" class="primary-btn" disabled>전송</button>
+                </form>
+            </div>
+
             <form id="debate-form">
                 <div class="model-selector">
                     <select id="model-select" required>
